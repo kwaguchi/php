@@ -1,8 +1,5 @@
 <?php
-    const DATABASE_HOST = 'localhost';
-    const DATABASE_USER = 'testuser';
-    const DATABASE_PASS = 'password';
-    const DATABASE_NAME = 'mydb';
+    
  
     $conn = mysqli_connect(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
     if (mysqli_connect_errno()) {
