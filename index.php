@@ -1,23 +1,46 @@
 <?php
-    
- 
-    $conn = mysqli_connect(DATABASE_HOST, DATABASE_USER, DATABASE_PASS, DATABASE_NAME);
-    if (mysqli_connect_errno()) {
-        die("cannnot connect database :" . mysqli_connect_error() . "\n");
+
+require __DIR__ . '/vendor/index.php';
+
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400');    
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+
+    exit(0);
+}
+
+$databaseHost = $_ENV['DATABASE_HOST'];
+$databaseUser = $_ENV['DATABASE_USER'];
+$databasePass = $_ENV['DATABASE_PASS'];
+$databaseName = $_ENV['DATABASE_NAME'];
+
+$conn = mysqli_connect($databaseHost, $databaseUser, $databasePass, $databaseName);
+
+if ($conn->connect_error) {
+    die("データベースへの接続に失敗しました: " . $conn->connect_error);
+}
+
+$sql = "SELECT Id, Name, Email, Image_url FROM customer";
+$result = $conn->query($sql);
+
+$data = array();
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
     }
+}
 
-    $result = $conn->query("SELECT * FROM users");
+header('Content-Type: application/json');
+echo json_encode($data);
 
-    
-    $data = array();
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $data[] = array_map('mb_convert_encoding', $row, array_fill(0, count($row), 'UTF-8'));
-        }
-    }
-
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    header('Access-Control-Allow-Origin: *');
-    $conn->close();
+$conn->close();
 ?>
